@@ -12,10 +12,16 @@ import timeit
 
 def profile(func):
     """A function that can be used as a decorator to measure performance"""
-    # You need to understand how decorators are constructed and used.
-    # Be sure to review the lesson material on decorators, they are used
-    # extensively in Django and Flask.
-    raise NotImplementedError("Complete this decorator function")
+
+    def performance_audit(*args, **kwargs):
+        p = cProfile.Profile()
+        p.enable()
+        r = func(*args, **kwargs)
+        p.disable()
+        stat = pstats.Stats(p).sort_stats('cumulative')
+        stat.print_stats()
+        return r
+    return performance_audit
 
 
 def read_movies(src):
@@ -28,14 +34,16 @@ def read_movies(src):
 def is_duplicate(title, movies):
     """returns True if title is within movies list"""
     for movie in movies:
-        if movie.lower() == title.lower():
+        if movie == title:
             return True
     return False
 
 
+@profile
 def find_duplicate_movies(src):
     """Returns a list of duplicate movies from a src list"""
     movies = read_movies(src)
+    movies = [movie.lower() for movie in movies]
     duplicates = []
     while movies:
         movie = movies.pop()
@@ -60,4 +68,4 @@ def main():
 
 
 if __name__ == '__main__':
-    timeit_helper()
+    main()
